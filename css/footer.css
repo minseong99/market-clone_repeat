@@ -25,9 +25,27 @@ footer {
 .nav-icons__img {
   width: 30px;
 }
+.nav-icons:hover .nav-icons__img {
+  animation: icons-up 2s;
+}
 
 .nav-icons__des {
   margin-top: 5px;
   transform: scale(0.7);
   font-weight: bold;
+}
+
+@keyframes icons-up {
+  0% {
+    transform: translateY(0px);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+  70% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }

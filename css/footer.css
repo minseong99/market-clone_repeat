@@ -1,0 +1,33 @@
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100vw;
+  padding: 20px 0 30px 0;
+  border-top: 1px solid #eaeaea;
+  background-color: white;
+}
+
+.nav-block {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.nav-icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 0 10px 0 10px;
+  cursor: pointer;
+}
+
+.nav-icons__img {
+  width: 30px;
+}
+
+.nav-icons__des {
+  margin-top: 5px;
+  transform: scale(0.7);
+  font-weight: bold;
+}

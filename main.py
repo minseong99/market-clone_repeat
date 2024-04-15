@@ -74,7 +74,7 @@ def get_image(item_id):
                               """).fetchone()[0] # 껍대기를 벗기는 과정
     
     # bytes.fromhex() -> 16진수를 해석해서 bytes 형식으로 변환
-    return Response(content=bytes.fromhex(image_bytes))
+    return Response(content=bytes.fromhex(image_bytes), media_type="image/*")
     
 
 

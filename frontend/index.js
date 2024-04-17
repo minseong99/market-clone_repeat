@@ -4,14 +4,14 @@ const setTime = (timeStamp) => {
   // 한국시간 utc + 9
   const curTime = new Date().getTime() - 9 * 60 * 60 * 1000;
   const passedTime = new Date(curTime - timeStamp);
-  // const month = passedTime.getMonth();
+  const month = passedTime.getMonth();
   const date = passedTime.getDate();
   const hour = passedTime.getHours();
   const minute = passedTime.getMinutes();
   const second = passedTime.getSeconds();
 
-  // if (month > 0) return `${month}달 전`;
-  if (date > 1) return `${date}일 전`;
+  if (month > 1) return `${month}달 전`;
+  else if (date > 1) return `${date}일 전`;
   else if (hour > 0) return `${hour}시간 전`;
   else if (minute > 0) return `${minute}분 전`;
   else if (second > 0) return `${second}초 전`;
@@ -67,8 +67,30 @@ const renderData = (jsonRes) => {
 };
 
 const fetchList = async () => {
-  const res = await fetch("/items");
+  let accessToken = window.localStorage.getItem("access_token");
+  const refreshToken = window.localStorage.getItem("refresh_token");
+
+  //유효 검사
+
+  const res = await fetch("/items", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
   const jsonRes = await res.json();
+  if (res.status === 401) {
+    const res3 = await fetch("/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    const data2 = await res3.json();
+    accessToken = data2.access_token;
+    window.localStorage.setItem("access_token", accessToken);
+    window.location.pathname = "/";
+  }
 
   renderData(jsonRes);
 };

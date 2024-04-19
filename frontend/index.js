@@ -69,6 +69,9 @@ const renderData = (jsonRes) => {
 const fetchList = async () => {
   let accessToken = window.localStorage.getItem("access_token");
   const refreshToken = window.localStorage.getItem("refresh_token");
+  if (refreshToken == null) {
+    window.location.pathname = "/login.html";
+  }
 
   //유효 검사
 
@@ -79,14 +82,16 @@ const fetchList = async () => {
   });
   const jsonRes = await res.json();
   if (res.status === 401) {
-    const res3 = await fetch("/token", {
+    console.log("POST");
+    const res2 = await fetch("/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
-    const data2 = await res3.json();
+    if (res2.status == 401) window.localStorage.removeItem("refresh_token");
+    const data2 = await res2.json();
     accessToken = data2.access_token;
     window.localStorage.setItem("access_token", accessToken);
     window.location.pathname = "/";

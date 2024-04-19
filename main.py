@@ -10,8 +10,9 @@ import hashlib
 from datetime import timedelta
 from pydantic import BaseModel
 
+
 class Token(BaseModel):
-    refresh_token: str
+    refresh_token:str
     
     
 con = sqlite3.connect("market.db", check_same_thread=False)
@@ -40,48 +41,57 @@ def hash_password(password):
 
 #secret은 access token을 어떻게 인코딩할지 정하는것
 #secret이 노출되면 다른사람이 access token을 decoding할 수 있다. 
-SECRET = "super-coding"
+SECRET = "super-coding2"
 manager = LoginManager(SECRET, '/login')
 
-
-@app.post("/token")
-def create_access_token(token:Token):
-    print(token.refresh_token)
-    try:
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        
-        token = cur.execute(f"""
-                    SELECT * FROM tokens 
-                    WHERE refresh_token='{token.refresh_token}'
-                    """).fetchone()
-        id = dict(token)["id"]
-        
-    except:
-        raise InvalidCredentialsException
-        return {}
-    
+def find_id(token):
     con.row_factory = sqlite3.Row
-    cur = con.cursor()
+    cur=con.cursor()
+    row = cur.execute(f"""
+                      SELECT * FROM tokens
+                      WHERE refresh_token='{token}'
+                      """).fetchone()
+   
+
+    return row["id"]
     
-    person = cur.execute(f"""
-                         SELECT * FROM users 
-                         WHERE id='{id}'
-                         """).fetchone()
+def delete_token(token):
     
-    dic_person= dict(person)
+    cur.execute(f"""
+                DELETE FROM tokens 
+                WHERE refresh_token='{token}'
+                """)
+    con.commit()
+    
+def make_access_token(id):
+    user = query_user(id)
     
     access_token = manager.create_access_token(data={
-        "sub": {
-            "id":dic_person["id"],
-            "name":dic_person["name"],
-            "email":dic_person["email"]
+        "sub":{
+            "id":user["id"],
+            "name":user["name"],
+            "email":user["email"]
+            
         }
-        
-    }, expires=timedelta(1))
+    }, expires=timedelta(minutes=1))
     return {"access_token":access_token}
 
+@app.post("/token")
+def create_access_token(token_info:Token):
+    token=token_info.refresh_token
+   
     
+    try:
+        payload = manager._get_payload(token)
+    
+        id = find_id(token)
+        access_token = make_access_token(id)
+    except:
+        delete_token(token)
+        raise InvalidCredentialsException
+    
+
+    return access_token
     
 
 #LoginManager가 key도 조회하기 때문에 아래 문구 추가
@@ -128,15 +138,13 @@ def login(id:Annotated[str, Form()],
         "sub":{
             "message": "this is refresh!"
         }},expires=timedelta(minutes=10))
-      
-    try:
-        cur.execute(f"""
-                INSERT INTO tokens(id, refresh_token)
-                VALUES ('{user["id"]}', '{refresh_token}')
-                """)  
-        con.commit()
-    except:
-        return {}
+    
+    cur.execute(f"""
+            INSERT INTO tokens(id, refresh_token)
+            VALUES ('{user["id"]}', '{refresh_token}')
+            """)  
+    con.commit()
+    
     
     
     return {"access_token":access_token, 

@@ -17,6 +17,8 @@ const handleSubmit = async (event) => {
   if (res.status === 200) {
     accessToken = data.access_token;
     refreshToken = data.refresh_token;
+    console.log(accessToken);
+    console.log(refreshToken);
     window.localStorage.setItem("access_token", accessToken);
     window.localStorage.setItem("refresh_token", refreshToken);
     alert("로그인에 성공했습니다.");
